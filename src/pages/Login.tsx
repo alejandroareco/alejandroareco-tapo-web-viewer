@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { fetchAuthSession } from "aws-amplify/auth";
 
 function Login() {
   const { login } = useAuth();
-  const navigate = useNavigate();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -14,35 +12,29 @@ function Login() {
 
     try {
       await login(email, password);
-      navigate("/");
+
+      const session = await fetchAuthSession();
+      console.log("ID TOKEN:", session.tokens?.idToken?.toString());
+      console.log("ACCESS TOKEN:", session.tokens?.accessToken?.toString());
+
     } catch (err) {
       alert("Login failed");
-      console.error(err);
     }
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      <h1>Login</h1>
-      <div>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-      </div>
-      <div style={{ marginTop: "1rem" }}>
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-      </div>
-      <button style={{ marginTop: "1rem" }} type="submit">
-        Sign In
-      </button>
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      <button type="submit">Login</button>
     </form>
   );
 }
