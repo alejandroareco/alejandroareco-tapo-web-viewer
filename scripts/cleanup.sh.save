@@ -1,0 +1,12 @@
+
+ç≈#!/bin/bash
+
+BASE_DIR="/home/alejandro/tapo/cams"
+LOG_FILE="/home/alejandro/tapo/logs/cleanup.log"
+
+echo "---- $(date) ----" >> "$LOG_FILE"
+
+# Borrar archivos mp4 con más de 2 días
+find "$BASE_DIR" -type f -name "*.mp4" -mtime +2 -print -delete >> "$LOG_FILE"
+
+echo "" >> "$LOG_FILE"

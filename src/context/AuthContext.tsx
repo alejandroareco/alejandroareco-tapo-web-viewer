@@ -1,53 +1,58 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { signIn, signOut, getCurrentUser } from "aws-amplify/auth";
+import { createContext, useContext, useEffect, useState } from "react";
+import {
+  fetchAuthSession,
+  getCurrentUser,
+  signIn,
+  signOut,
+} from "aws-amplify/auth";
 
-interface AuthContextType {
-  user: any;
-  loading: boolean;
+type AuthStatus = "loading" | "authed" | "guest";
+
+type AuthCtx = {
+  status: AuthStatus;
+  refresh: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-}
+};
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const Ctx = createContext<AuthCtx | null>(null);
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [status, setStatus] = useState<AuthStatus>("loading");
 
-  useEffect(() => {
-    checkUser();
-  }, []);
-
-  const checkUser = async () => {
+  const refresh = async () => {
     try {
-      const currentUser = await getCurrentUser();
-      setUser(currentUser);
+      await getCurrentUser();
+      await fetchAuthSession();
+      setStatus("authed");
     } catch {
-      setUser(null);
-    } finally {
-      setLoading(false);
+      setStatus("guest");
     }
   };
 
   const login = async (email: string, password: string) => {
     await signIn({ username: email, password });
-    await checkUser();
+    await refresh();
   };
 
   const logout = async () => {
     await signOut();
-    setUser(null);
+    await refresh();
   };
 
-  return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
+  useEffect(() => {
+    refresh();
+  }, []);
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within AuthProvider");
-  return context;
-};
+  return (
+    <Ctx.Provider value={{ status, refresh, login, logout }}>
+      {children}
+    </Ctx.Provider>
+  );
+}
+
+export function useAuth() {
+  const v = useContext(Ctx);
+  if (!v) throw new Error("useAuth must be used within AuthProvider");
+  return v;
+}

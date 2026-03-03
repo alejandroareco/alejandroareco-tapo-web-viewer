@@ -1,43 +1,25 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import Layout from "./components/Layout";
-import Home from "./pages/Home";
-import Recordings from "./pages/Recordings";
 import Login from "./pages/Login";
-import { useAuth } from "./context/AuthContext";
+import Recordings from "./pages/Recordings";
+import ProtectedRoute from "./components/ProtectedRoute";
+import ContactAdmin from "./pages/ContactAdmin";
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
-
-  if (loading) return <div>Loading...</div>;
-  if (!user) return <Navigate to="/login" />;
-
-  return <>{children}</>;
-}
-
-function App() {
+export default function App() {
   return (
-    <Layout>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/recordings"
-          element={
-            <ProtectedRoute>
-              <Recordings />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/login" element={<Login />} />
-      </Routes>
-    </Layout>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/contact-admin" element={<ContactAdmin />} />
+
+      <Route
+        path="/recordings"
+        element={
+          <ProtectedRoute>
+            <Recordings />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route path="*" element={<Navigate to="/recordings" />} />
+    </Routes>
   );
 }
-
-export default App;
