@@ -14,7 +14,7 @@ type Recording = {
 export default function Recordings() {
   const { logout } = useAuth();
   const nav = useNavigate();
-  const [camera, setCamera] = useState("cam-03");
+  const [camera, setCamera] = useState("cam-01");
   const [items, setItems] = useState<Recording[]>([]);
   const [nextToken, setNextToken] = useState<string | null>(null);
   const [selectedUrl, setSelectedUrl] = useState<string | null>(null);
@@ -88,10 +88,13 @@ export default function Recordings() {
 
             <div className="field">
               <label>Cámara</label>
-              <select>
-                <option>01</option>
-                <option>02</option>
-                <option>03</option>
+              <select
+                value={camera}
+                onChange={(e) => setCamera(e.target.value)}
+              >
+                <option value="cam-01">01</option>
+                <option value="cam-02">02</option>
+                <option value="cam-03">03</option>
               </select>
             </div>
 
@@ -116,8 +119,8 @@ export default function Recordings() {
               </label>
             </div>
 
-            <button className="primary-btn" onClick={handleSearch}>
-              Buscar Grabación
+            <button className="primary-btn" onClick={handleSearch} disabled={loading}>
+              {loading ? "Buscando..." : "Buscar Grabación"}
             </button>
 
             <div className="timeline">
@@ -151,7 +154,7 @@ export default function Recordings() {
           {/* PLAYER */}
           <section className="player">
             <div className="player-header">
-              <h3>Reproducción - Cámara 01</h3>
+              <h3>Reproducción - {camera.replace("cam-", "Cámara ")}</h3>
               <button className="download-btn">Descargar Video</button>
             </div>
 
